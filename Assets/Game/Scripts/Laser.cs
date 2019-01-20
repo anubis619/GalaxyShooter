@@ -20,7 +20,12 @@ public class Laser : MonoBehaviour {
         // Note use this. in order to target only this object
         if (transform.position.y > 6)
         {
+            if (transform.parent != null)
+            {
+                Destroy(transform.parent.gameObject);
+            }
             Destroy(this.gameObject);
         }
 	}
+
 }

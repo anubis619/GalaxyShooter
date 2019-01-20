@@ -10,12 +10,27 @@ public class Player : MonoBehaviour {
     // Speed active check speed boost will be 2x times
     public bool isSpeedBoost = false;
 
+    // Shield Power Up
+    public bool shieldSystemOn = false;
+
+    //Player on death animation
+    [SerializeField]
+    private GameObject PlayerExplosionPrefab;
+
+    // player life
+    //[SerializeField]
+    public int playerLife = 3;
 
     // Prefab for the laser sprite
     [SerializeField]
     private GameObject laserPrefab;
     [SerializeField]
     private GameObject tripleShotPrefab;
+    [SerializeField]
+    private GameObject shieldGameObject;
+
+    [SerializeField]
+    private GameObject[] engines;
 
 
     // Projectile fireRate and cooldown settings.
@@ -28,16 +43,44 @@ public class Player : MonoBehaviour {
     [SerializeField]
     private float speed = 5.0f;
 
+
+    //UI Manager
+    private UIManager ui_Manager;
+    private GameManager gameManager;
+    private SpawnManager Spawn_Manager;
+    private AudioSource audiosourcesetting;
+
+
+    private int hitCount = 0;
 	// Use this for initialization
-	void Start () {
+	void Start ()
+    {
 
         // current pos = new position
         transform.position = new Vector3(0, 0, 0);
-        
+
+        ui_Manager = GameObject.Find("Canvas").GetComponent<UIManager>();
+
+        if (ui_Manager != null)
+        {
+            ui_Manager.UpdateLives(playerLife);
+        }
+
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        Spawn_Manager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+
+        if (Spawn_Manager != null)
+        {
+            Spawn_Manager.StartSpawnRoutines();
+        }
+
+        audiosourcesetting = GetComponent<AudioSource>();
+        hitCount = 0;
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
         
         Movement();
 
@@ -45,11 +88,7 @@ public class Player : MonoBehaviour {
         {
             LaserShoot();
         }
-        
-
-        
-        
-    
+            
     }
 
     private void Movement()
@@ -104,6 +143,7 @@ public class Player : MonoBehaviour {
         // Projectile instantiation and call of the firerate to create a cooldown to not spam the projectile
         if (Time.time > nextFire)
         {
+            audiosourcesetting.Play();
             if (canTripleShot == true)
             {
                 Instantiate(tripleShotPrefab, transform.position, Quaternion.identity);
@@ -117,8 +157,49 @@ public class Player : MonoBehaviour {
         }
     }
 
-    // method to enable the power up
+    public void Damage()
+    {
 
+        
+
+
+        if (shieldSystemOn == true)
+        {
+
+            shieldSystemOn = false;
+            shieldGameObject.SetActive(false);
+        }
+
+        else if (shieldSystemOn == false)
+        {
+
+            hitCount++;
+
+            if (hitCount == 1)
+            {
+                engines[0].SetActive(true);
+            }
+            else if (hitCount == 2)
+            {
+                engines[1].SetActive(true);
+            }
+
+            playerLife--;
+            ui_Manager.UpdateLives(playerLife);
+            if (playerLife < 1)
+            {
+                Instantiate(PlayerExplosionPrefab, transform.position, Quaternion.identity);
+                gameManager.GameIsOn = false;
+                ui_Manager.ShowTitleScreen();
+                Destroy(this.gameObject);
+
+            }
+        }
+    }
+
+        // method to enable the power up
+
+        // enable triple shot power up
     public void TripleShotPowerUpOn()
     {
         canTripleShot = true;
@@ -126,15 +207,25 @@ public class Player : MonoBehaviour {
     }
 
 
+        // enable speed boot power up
     public void SpeedBoostPowerUpOn()
     {
         isSpeedBoost = true;
         StartCoroutine(SpeedBoostPowerDownRoutine());
     }
 
+        // enable shield power up
+
+    public void ShieldPowerupOn()
+    {
+        shieldSystemOn = true;
+        shieldGameObject.SetActive(true);
+        StartCoroutine(ShieldPowerDownRoutine());
+    }
+
     // coroutine method (ienumerator) to power down
 
-
+        // Speed boost coroutine
     public IEnumerator SpeedBoostPowerDownRoutine()
     {
         yield return new WaitForSeconds(5);
@@ -142,11 +233,19 @@ public class Player : MonoBehaviour {
         isSpeedBoost = false;
     }
    
-
+        // triepl shot coroutine
     public IEnumerator TripleShotPowerDownRoutine()
     {
         yield return new WaitForSeconds(10);
 
         canTripleShot = false;
     }
-}
+
+        // shield coroutine
+    public IEnumerator ShieldPowerDownRoutine()
+    {
+        yield return new WaitForSeconds(15);
+        shieldSystemOn = false;
+        shieldGameObject.SetActive(false);
+    }
+}   

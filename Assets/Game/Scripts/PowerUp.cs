@@ -5,12 +5,16 @@ using UnityEngine;
 public class PowerUp : MonoBehaviour {
 
     [SerializeField]
-    private float speed = 3;
+    private float speed = 2;
     [SerializeField]
     private int powerupID; // 0 = triple shot, 1 = speed boost, 2 = shield
+
+    [SerializeField]
+    private AudioClip clip;
     
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
 
         transform.Translate(Vector3.down *speed * Time.deltaTime);
 
@@ -35,20 +39,24 @@ public class PowerUp : MonoBehaviour {
             if (player != null)
             {
                 
-                if (powerupID == 0)
+                if (powerupID == 0) // 0 = tripleshot
                 {
                     // enable the triple shot bool
                     player.TripleShotPowerUpOn();
+                    AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, 1f);
                 }
-                else if (powerupID == 1)
+                else if (powerupID == 1) // 1 = speedboost
                 {
                     // enable speed boost
                     player.SpeedBoostPowerUpOn();
+                    AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, 1f);
                 }
 
-                else if (powerupID == 2) {
+                else if (powerupID == 2) // 2 = shield
+                {
                     // enable shields
-
+                    player.ShieldPowerupOn();
+                    AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, 1f);
                 }
 
 

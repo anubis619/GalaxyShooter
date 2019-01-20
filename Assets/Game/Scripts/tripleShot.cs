@@ -18,9 +18,11 @@ public class tripleShot : MonoBehaviour {
         transform.Translate(Vector3.up * speed * Time.deltaTime);
         // Destroy triple Shot  prefab when going out of screen.
 
-        if (transform.position.y > 6)
-        {
-            Destroy(this.gameObject);
-        }
+        //if (transform.position.y > 6)
+        //{
+        //    Destroy(this.gameObject);
+        //}
     }
+
+    
 }
